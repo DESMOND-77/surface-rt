@@ -1,0 +1,28 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-lenovo-tb-x704f
+pkgdesc="Lenovo TAB4 10 Plus"
+pkgver=3
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	linux-lenovo-tb-x704f
+	mkbootimg
+	postmarketos-base
+"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+ad494a09bf1ced4a73cf876b4bcc63c37e037ca6083be18f85282c4da6ce1dcf87fbf9fb25735273c8f5c6e516e9417601dd49fd99e80bddc3fb5855e9286028  deviceinfo
+"

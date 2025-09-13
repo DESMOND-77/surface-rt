@@ -1,0 +1,25 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-samsung-j1mini3g
+pkgdesc="Samsung Galaxy J1 mini"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="postmarketos-base linux-samsung-j1mini3g mkbootimg msm-fb-refresher"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+
+sha512sums="
+3c2d3af8812aba9c74cb62c873d1e3c6545386701567146bfc1b3eb0e7edb221f5cfab38de4ab47f28420d4f6b4a98ddf958d065fa2117ef8500716084c3f7a2  deviceinfo
+"

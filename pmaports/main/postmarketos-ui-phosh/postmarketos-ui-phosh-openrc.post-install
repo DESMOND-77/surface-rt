@@ -1,0 +1,6 @@
+#!/bin/sh
+
+rc-update add tinydm default
+rc-update add waked default
+
+exit 0

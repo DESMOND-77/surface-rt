@@ -1,0 +1,30 @@
+# Archived: Downstream port, only for testing. Use mainline port!
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-lg-h815-downstream
+pkgdesc="LG G4 (h815) (Downstream)"
+pkgver=1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+depends="
+	linux-lg-h815-downstream
+	mkbootimg
+	msm-fb-refresher
+	postmarketos-base
+"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+options="!check !archcheck"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+1128fd9903a1e450686b091dce1df58694eb9f8ae54aaa725ee290c45a20464f5e8d0cbdbf9601fc6f3818e9675b6d70cf65eee3db0eec2c44c2fab92fb4104d  deviceinfo
+"

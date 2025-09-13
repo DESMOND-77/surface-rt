@@ -1,0 +1,71 @@
+# Maintainer: Richard Acayan <mailingradian@gmail.com>
+# Stable Linux kernel with patches for SDM670 devices
+# Kernel config based on: arch/arm64/configs/{defconfig,sdm{670,845}.config}
+
+_flavor="postmarketos-qcom-sdm670"
+pkgname=linux-$_flavor
+pkgver=6.15.2
+pkgrel=0
+pkgdesc="Mainline Kernel fork for SDM670 devices"
+arch="aarch64"
+_carch="arm64"
+url="https://gitlab.com/sdm670-mainline/linux"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community"
+makedepends="
+	bash
+	bison
+	findutils
+	flex
+	installkernel
+	openssl-dev
+	perl
+	python3
+	zstd
+"
+
+_config="config-$_flavor.$arch"
+_tag="sdm670-v$pkgver"
+
+# Source
+source="
+	https://gitlab.com/sdm670-mainline/linux/-/archive/$_tag/linux-$_tag.tar.gz
+	$_config
+"
+builddir="$srcdir/linux-$_tag"
+
+prepare() {
+	default_prepare
+	cp "$srcdir/config-$_flavor.$arch" .config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-$_flavor"
+}
+
+package() {
+	mkdir -p "$pkgdir"/boot
+
+	install -Dm644 "$builddir/arch/$_carch/boot/Image.gz" \
+		"$pkgdir/boot/vmlinuz"
+
+	make modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_PATH="$pkgdir"/boot/ \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_DTBS_PATH="$pkgdir"/boot/dtbs
+	rm -f "$pkgdir"/lib/modules/*/build "$pkgdir"/lib/modules/*/source
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+}
+
+sha512sums="
+de6df74b978666e247a59292bcc5e761571c53f0416e25c9996b1831ef25e8fe6bd84ff2cb9721b6bbf0ac605ae23d4caf7ace7af2bf4db750ac789ec22fcf15  linux-sdm670-v6.15.2.tar.gz
+5731f02b4fbd494f2d9d511536b9d585c3ba8fd96862a03cb0db424694975883b3ab6d8989170582e37852357983b4fb4daa0fbef57289b5926fee655ce9d65a  config-postmarketos-qcom-sdm670.aarch64
+"

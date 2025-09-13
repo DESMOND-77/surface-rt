@@ -1,0 +1,141 @@
+# Forked from Alpine to add phone adaptivity patches
+
+pkgname=gnome-shell-mobile
+pkgver=48.0
+pkgrel=1
+pkgdesc="GNOME shell"
+url="https://wiki.gnome.org/Projects/GnomeShell"
+# gjs / riscv64: mutter-mobile
+arch="all !armhf !s390x !riscv64"
+license="GPL-2.0-or-later"
+depends="
+	accountsservice
+	adwaita-icon-theme
+	adwaita-fonts
+	desktop-file-utils
+	elogind
+	gnome-bluetooth
+	gnome-control-center
+	gnome-shell-mobile-schemas
+	gsettings-desktop-schemas
+	gst-plugin-pipewire
+	gst-plugins-good
+	gstreamer
+	ibus
+	librsvg
+	mutter-mobile>=46
+	tecla
+	unzip
+	upower
+	"
+makedepends="
+	asciidoc
+	elogind-dev
+	evolution-data-server-dev evolution-dev
+	gcr4-dev
+	gjs-dev>=1.64.0
+	gnome-autoar-dev
+	gnome-bluetooth-dev
+	gnome-control-center-dev
+	gnome-desktop-dev>=3.35.91
+	gobject-introspection-dev
+	gstreamer-dev
+	ibus-dev
+	libcanberra-dev
+	libnma-dev
+	libxml2-dev
+	libxml2-utils
+	meson
+	mutter-mobile-dev>=46
+	networkmanager-dev
+	pipewire-dev
+	polkit-dev
+	pulseaudio-dev
+	py3-docutils
+	py3-setuptools
+	python3
+	sassc
+	startup-notification-dev
+	tecla-dev
+	"
+checkdepends="
+	xvfb-run
+	mesa-dri-gallium
+	"
+	# gdm is also needed but introduces circular dep
+provides="gnome-shell=$pkgver-r$pkgrel"
+subpackages="
+	$pkgname-dbg
+	$pkgname-doc
+	$pkgname-lang
+	$pkgname-schemas::noarch
+	gnome-mobile-extensions-app:extensions_app:noarch
+	"
+_commit="48.mobile.0"
+_gvc_commit="5f9768a2eac29c1ed56f1fbb449a77a3523683b6"
+source="gnome-shell-mobile-$_commit.tar.gz::https://gitlab.gnome.org/verdre/gnome-shell-mobile/-/archive/$_commit/gnome-shell-mobile-$_commit.tar.gz
+	libgnome-volume-control-$_gvc_commit.tar.gz::https://gitlab.gnome.org/GNOME/libgnome-volume-control/-/archive/$_gvc_commit/libgnome-volume-control-$_gvc_commit.tar.gz
+	gsh.patch
+	pcver.patch
+	"
+builddir="$srcdir/gnome-shell-mobile-$_commit"
+options="!check" # Tests have circular dependency 'gnome-shell <-> gdm'
+
+prepare() {
+	default_prepare
+	rm -rf "$builddir/subprojects/gvc"
+	mv "$srcdir/libgnome-volume-control-$_gvc_commit" $builddir/subprojects/gvc
+}
+
+build() {
+	abuild-meson \
+		-Dsystemd=false \
+		-Dtests=false \
+		. output
+	meson compile ${JOBS:+-j ${JOBS}} -C output
+}
+
+check() {
+	xvfb-run meson test -v -C output
+}
+
+extensions_app() {
+	provides="gnome-extensions-app=$pkgver-r$pkgrel"
+	pkgdesc="Manage GNOME Shell extensions"
+	depends="gnome-shell-mobile libadwaita"
+	replaces="gnome-shell-mobile"
+
+	amove usr/bin/gnome-extensions-app
+	amove usr/share/applications/org.gnome.Shell.Extensions.desktop
+	amove usr/share/gnome-shell/org.gnome.Extensions
+	amove usr/share/gnome-shell/org.gnome.Extensions.data.gresource
+	amove usr/share/gnome-shell/org.gnome.Extensions.src.gresource
+}
+
+schemas() {
+	pkgdesc="GNOME Shell gsetting schemas"
+	depends=""
+	provides="gnome-shell-schemas=$pkgver-r$pkgrel"
+
+	amove usr/share/glib-2.0/schemas
+	amove usr/share/gnome-control-center/keybindings
+}
+
+lang() {
+	default_lang
+	provides="gnome-shell-lang=$pkgver-r$pkgrel"
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+
+	# owned by postmarketos-hidden-desktop-entries
+	rm $pkgdir/usr/share/applications/org.gnome.Extensions.desktop
+}
+
+sha512sums="
+01a4beb195f48a7ce00a50453695ccc10c7a00fcda81428bf1bb07aacef70a14ffed8124faa50ac98d601d4d43f291c2cd48835bdb79d5e8e751677d877a6953  gnome-shell-mobile-48.mobile.0.tar.gz
+ef6a103ddca784db35648acd11a423a9d65173c597c6463a572834827c9812bb1be5c8113d93a28ea99ca017dd1655b8eaf417a30b6b9085677baf373395aac1  libgnome-volume-control-5f9768a2eac29c1ed56f1fbb449a77a3523683b6.tar.gz
+ae4ac679bacd35948b44068e5a70407f473bd96986ee126abb1bdf066db5cbc2087a3ffae0b390286689cacbe8325870fd43663ba39f4f7543216e02bf083934  gsh.patch
+0503440b547b78859c3bb87a66308899bcf33cc0b543e04e9c865904ff7fb86b10b66594c37a1726828ee1a497b0e034150be8cf1a9fbd06c59809619f6a31c8  pcver.patch
+"

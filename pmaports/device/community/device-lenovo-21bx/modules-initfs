@@ -1,0 +1,39 @@
+# PCIe + NVMe
+nvme
+phy_qcom_qmp_pcie
+pcie_qcom
+
+# Keyboard, mouse, some on-board devices
+i2c_hid_of
+i2c_qcom_geni
+
+# PWM, backlight
+leds_qcom_lpg
+pwm_bl
+
+# Battery management, TCPM, remote DSPs
+qrtr
+pmic_glink_altmode
+
+# USB-C
+gpio_sbu_mux
+phy_qcom_qmp_combo
+
+# Display
+gpucc_sc8280xp
+dispcc_sc8280xp
+panel_edp
+phy_qcom_edp
+msm
+
+# USB boot
+phy_qcom_qmp_usb
+phy_qcom_snps_femto_v2
+dwc3
+dwc3_qcom
+extcon_core
+## Need to load remoteproc modules in the initramfs, if they are loaded later
+## then it can cause a power cycle that breaks USB
+qcom_common
+qcom_q6v5_pas
+qrtr-smd

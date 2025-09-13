@@ -1,0 +1,34 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-samsung-s3ve3g
+pkgdesc="Samsung Galaxy S III Neo"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="
+	postmarketos-base
+	postmarketos-base-downstream-disable-udev-v4l
+	linux-samsung-s3ve3g
+	mkbootimg
+	msm-fb-refresher
+"
+makedepends="devicepkg-dev"
+source="
+	deviceinfo
+	initfs-hook.sh
+"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+bd9f19833559d73b736073fb1de4c4c273e56bfcc09a7a72def16692354e78b16e6098ed8ae1483f6da69db90fcae449403a8b04ae3668946c40fbcbd0e07611  deviceinfo
+b6102448a5c04cc0f8527295f312d38affb250c6c248018f9dbe543d51824f0f32d3ee334d1caee1e630a07b49bda3d81dee50ea3cb04397100f369d308400f7  initfs-hook.sh
+"

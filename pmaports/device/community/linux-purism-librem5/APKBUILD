@@ -1,0 +1,96 @@
+# Reference: <https://postmarketos.org/vendorkernel>
+# Maintainer: Alistair Francis <alistair@alistair23.me>
+# Co-Maintainer: Newbyte <newbyte@postmarketos.org>
+# Contributor: Clayton Craft <clayton@craftyguy.net>
+pkgname=linux-purism-librem5
+pkgver=6.6.83
+pkgrel=1
+# NOTE: Don't forget to rebase the config! See prepare() for instructions.
+_purismrel=2
+_pureosrel=cri1
+# <kernel ver> + <purism kernel release> + <PureOS release>
+_purismver=${pkgver}pureos${_purismrel}_$_pureosrel
+pkgdesc="Purism Librem 5 phone kernel fork"
+arch="aarch64"
+_carch="arm64"
+_flavor="purism-librem5"
+url="https://source.puri.sm/Librem5/linux"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community
+	pmb:kconfigcheck-librem5
+	"
+makedepends="
+	bash
+	bison
+	devicepkg-dev
+	findutils
+	flex
+	installkernel
+	openssl-dev
+	perl
+	rsync
+	xz
+	"
+install="$pkgname.post-upgrade"
+
+# Source
+_repository="linux"
+# kconfig generated with: ARCH=arm64 make defconfig KBUILD_DEFCONFIG=librem5_defconfig
+_config="config-$_flavor.$arch"
+
+
+source="
+	$pkgname-$_purismver.tar.gz::https://source.puri.sm/Librem5/linux/-/archive/pureos/$_purismver/linux-pureos-$_purismver.tar.gz
+	$_config
+"
+builddir="$srcdir/$_repository-pureos-$_purismver"
+
+prepare() {
+	default_prepare
+	REPLACE_GCCH=0 \
+		. downstreamkernel_prepare
+
+	####### Rebase config
+	# The kernel config needs to be periodically rebased to enable new
+	# modules/features that Purism has enabled in their defconfig. This is done
+	# by: 1) generate .config using librem5_defconfig, 2) diff that .config
+	# with the config in this package, 3) carefully going over the diff and
+	# selecting new things enabled in their config.
+	#
+	# This can be uncommented to help generate the defconfig using "pmbootstrap
+	# build linux-purism-librem5". The build will fail (exit 1) to let you grab
+	# the config before it starts building the kernel:
+	#    make ARCH="$_carch" CC="${CC:-gcc}" \
+	#       defconfig KBUILD_DEFCONFIG=librem5_defconfig
+	#    exit 1
+	#
+	# After that run the following
+	#    cp <chroot_native/home/pmos/build/src/linux-pureos-6.6.83pureos2_cri1/.config> \
+	#       device/community/linux-purism-librem5/config-purism-librem5.aarch64
+	#    pmbootstrap kconfig edit linux-purism-librem5
+	#    pmbootstrap kconfig check linux-purism-librem5
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS" \
+		LOCALVERSION=".$_purismrel"
+}
+
+package() {
+	downstreamkernel_package "$builddir" "$pkgdir" "$_carch" "$_flavor"
+
+	make modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_DTBS_PATH="$pkgdir/boot/dtbs"
+
+}
+
+sha512sums="
+51f22b06b4e83364fc68f1ae654003804ce4af8631178552ab91094ea06bb024403489b915436c2772404052d2a76e68989a43373c8e0d880c568ec740407d11  linux-purism-librem5-6.6.83pureos2_cri1.tar.gz
+04551f5e12abdea04395f46b5c30e73e0da3e6cbafe2150425e248081a6cc95e39b982fb2376b6c24c0a8a1e68e85a185ff29e015740dd520e41230a557b806d  config-purism-librem5.aarch64
+"

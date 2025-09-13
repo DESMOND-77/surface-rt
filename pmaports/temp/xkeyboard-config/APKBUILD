@@ -1,0 +1,41 @@
+# Maintainer: Sicelo A. Mhlongo <absicsz@gmail.com>
+pkgname=xkeyboard-config
+pkgver=9999
+_pkgver=2.45
+_commit="23fec5367a042639ed93f7cf3878fbe9ddb84115"
+pkgrel=2
+pkgdesc="X keyboard configuration files"
+url="https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config"
+arch="armv7"
+license="MIT"
+subpackages="$pkgname-dev $pkgname-doc $pkgname-lang"
+depends_dev="$pkgname"
+makedepends="gettext meson perl libxslt"
+checkdepends="gawk"
+source="
+	https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/archive/$_commit/xkeyboard-config-$_commit.tar.gz
+	re-nokia.patch
+	"
+builddir="$srcdir/xkeyboard-config-$_commit"
+
+build() {
+	abuild-meson . output
+	meson compile -C output
+}
+
+check() {
+	meson test --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+	# apk-tools unable to handle symlink correctly for the time being
+	rm "$pkgdir"/usr/share/X11/xkb/
+	mv "$pkgdir"/usr/share/xkeyboard-config-2/ "$pkgdir"/usr/share/X11/xkb/
+	ln -s X11/xkb "$pkgdir"/usr/share/xkeyboard-config-2
+}
+
+sha512sums="
+b40f1be143495cbf20b18016643cef5ff123f4b9eb236bbd789a300d220bd9476f858ee5bfb1bd4191aa6e3ece4b65510892c1982926b49ac8d2daa5dfbe258a  xkeyboard-config-23fec5367a042639ed93f7cf3878fbe9ddb84115.tar.gz
+88c44ba723dc97fdaba04076fc49ff09c01384b689e93c9b1ab2b7c4547ea88cb64fbd2f203094abe149d4c1ff6efe38529ddf37f97fbbc3a22a714966289775  re-nokia.patch
+"

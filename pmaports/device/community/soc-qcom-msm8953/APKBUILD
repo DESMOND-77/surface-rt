@@ -1,0 +1,79 @@
+# Maintainer: Barnabas Czeman <barnabas.czeman@postmarketos.org>
+# Co-Maintainer: Alejandro Tafalla <alikates@dnyon.com>
+# Co-Maintainer: Victor Pavlov (vipaoL) <vipaolmail@gmail.com>
+# Co-Maintainer: Danila Tikhonov (JIaxyga) <danila@mainlining.org>
+pkgname=soc-qcom-msm8953
+pkgdesc="Common package for Qualcomm MSM8953 devices"
+pkgver=14
+pkgrel=0
+url="https://postmarketos.org"
+license="BSD-3-Clause"
+arch="aarch64"
+options="!check !archcheck !tracedeps pmb:cross-native"
+depends="$pkgname-ucm swclock-offset"
+subpackages="
+	$pkgname-gpu
+	$pkgname-modem
+	$pkgname-modem-openrc:modem_openrc
+	$pkgname-ucm
+"
+
+_ucm_commit="f6dfc9b072e74b0ab2afcf452bc106242049ef28"
+source="
+	$pkgname-$_ucm_commit.tar.gz::https://github.com/msm8953-mainline/alsa-ucm-conf/archive/$_ucm_commit.tar.gz
+	q6voiced.conf
+	adreno-a506-quirks.sh
+	moto-modem-rfs-setup.openrc
+"
+
+package() {
+	mkdir -p "$pkgdir"
+}
+
+ucm() {
+	provides="alsa-ucm-conf"
+	provider_priority=1
+
+	cd "$srcdir/alsa-ucm-conf-$_ucm_commit"
+	mkdir -p "$subpkgdir"/usr/share/alsa
+	cp -r ucm2 "$subpkgdir"/usr/share/alsa
+}
+
+modem() {
+	depends="
+		msm-modem-uim-selection
+		q6voiced
+		qrtr
+		rmtfs
+		tqftpserv
+	"
+
+	install -Dm644 "$srcdir"/q6voiced.conf "$subpkgdir"/etc/conf.d/q6voiced
+}
+
+modem_openrc() {
+	install_if="$pkgname-modem=$pkgver-r$pkgrel openrc"
+	install="$subpkgname.post-install $subpkgname.post-upgrade"
+	depends="
+		openrc
+		q6voiced-openrc
+		rmtfs-openrc
+		tqftpserv-openrc
+	"
+	install -Dm755 $srcdir/moto-modem-rfs-setup.openrc "$subpkgdir"/etc/init.d/moto-modem-rfs-setup
+}
+
+gpu() {
+	pkgdesc="Various GPU workarounds for Adreno a506"
+	install_if="$pkgname=$pkgver-r$pkgrel mesa-dri-gallium"
+
+	install -Dm644 "$srcdir"/adreno-a506-quirks.sh \
+		"$subpkgdir"/etc/profile.d/adreno-a506-quirks.sh
+}
+
+sha512sums="
+8aadc874c8a334e46c7bf630874c3035070aa7b9052deba1a28ae059ab9d63dd99dfb82c1a58d09da5063ad250de813e3974e040ce938a53347e390ce2e450eb  soc-qcom-msm8953-f6dfc9b072e74b0ab2afcf452bc106242049ef28.tar.gz
+3a4a9322839d4b3ef9d79668a37840a9f444954759ae3c512e694051d2f9a2573db42ad6c4c1a5c75eeb861232a27ba1a8cef9b503decd54ead25a96e3dd6f98  q6voiced.conf
+4f9af3c582ae611d42fc058f949f60a96fc7cc884052e4c9f82e0292d57bba3b3cb8ace1d512b5a59535caa633be8558246a7519c2d067b7980f4088f452df6d  adreno-a506-quirks.sh
+d4fd0f3406c9f004e9cae7bc500c5713aab75f102f8e3ea1af820865f01eb03def01cd9ed3e8a184c7dfc22ab419628fad17957a3782885d96eb36e94461e842  moto-modem-rfs-setup.openrc
+"

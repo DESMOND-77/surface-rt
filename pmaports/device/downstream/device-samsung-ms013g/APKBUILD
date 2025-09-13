@@ -1,0 +1,25 @@
+
+pkgname=device-samsung-ms013g
+pkgdesc="Samsung Galaxy Grand 2"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="postmarketos-base linux-samsung-ms013g mkbootimg msm-fb-refresher"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+
+sha512sums="
+6184764faff95dc5dd9f451f299c23f02db29f25d8fcebd4574655a2bb9f4a0b407d1f1eab6cff191579af8ad9e6065b566fc8589c2bad6acd02f4b448962fda  deviceinfo
+"

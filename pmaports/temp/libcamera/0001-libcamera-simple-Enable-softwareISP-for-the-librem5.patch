@@ -1,0 +1,26 @@
+From d5d0b31dfb7e71d0d9e1439d0985345148090708 Mon Sep 17 00:00:00 2001
+From: Robert Mader <robert.mader@collabora.com>
+Date: Mon, 22 Apr 2024 23:30:31 +0200
+Subject: [PATCH 01/12] libcamera: simple: Enable softwareISP for the librem5
+
+And - in theory - on similar devices.
+---
+ src/libcamera/pipeline/simple/simple.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/libcamera/pipeline/simple/simple.cpp b/src/libcamera/pipeline/simple/simple.cpp
+index 4323472e1..74e0683f4 100644
+--- a/src/libcamera/pipeline/simple/simple.cpp
++++ b/src/libcamera/pipeline/simple/simple.cpp
+@@ -250,7 +250,7 @@ namespace {
+ 
+ static const SimplePipelineInfo supportedDevices[] = {
+ 	{ "dcmipp", {}, false },
+-	{ "imx7-csi", { { "pxp", 1 } }, false },
++	{ "imx7-csi", { { "pxp", 1 } }, true },
+ 	{ "intel-ipu6", {}, true },
+ 	{ "j721e-csi2rx", {}, true },
+ 	{ "mtk-seninf", { { "mtk-mdp", 3 } }, false },
+-- 
+2.50.1
+

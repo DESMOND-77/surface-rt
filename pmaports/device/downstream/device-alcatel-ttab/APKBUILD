@@ -1,0 +1,28 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-alcatel-ttab
+pkgdesc="Alcatel Telekom Puls"
+pkgver=1
+pkgrel=1
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="
+	linux-alcatel-ttab
+	mkbootimg
+	postmarketos-base
+"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+8d43d528b070ed4594095bfa978efcaec8eba63fc940a34a303da94a11b00d3829486b6e70b8d8202f68b49a6b6028bce84f732b564f1c6d54df0ecca4bf5c6c  deviceinfo
+"

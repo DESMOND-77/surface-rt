@@ -1,0 +1,45 @@
+# Reference: <https://postmarketos.org/devicepkg>
+# Maintainer: Minecrell <minecrell@minecrell.net>
+# Co-Maintainer: Luca Weiss <luca@lucaweiss.eu>
+pkgname=device-qemu-riscv64
+pkgver=5
+pkgrel=0
+pkgdesc="Simulated device in QEMU (riscv64)"
+url="https://postmarketos.org"
+arch="riscv64"
+license="MIT"
+depends="
+	postmarketos-base
+	postmarketos-qemu-common
+	"
+makedepends="devicepkg-dev"
+subpackages="
+	$pkgname-kernel-stable:kernel_stable
+	"
+
+source="
+	deviceinfo
+	modules-initfs
+	"
+options="!check !archcheck"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+kernel_stable() {
+	pkgdesc="Alpine Stable kernel"
+	depends="linux-stable linux-firmware-none"
+	provides="$pkgname-kernel-edge=$pkgver-r$pkgrel"
+	replaces="$pkgname-kernel-edge"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+sha512sums="
+4e2acace2d7a5b55302e9571eef3e57cbc14c2831a2e0797ef5ff87290aef581a0bf112816c2f113878b9ca57599b66d0e3f8a593e0c08819322ff8d5ea7f351  deviceinfo
+8129439ec53e76e714b2d3dac97bbe702822d6f6642ea6b631aa26001fec85ca310fbe9eeb04c2bd849145a1137b7934c21b704524f3a98b96b7c6f71c2ca992  modules-initfs
+"

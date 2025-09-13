@@ -1,0 +1,27 @@
+From c76bc842c0d9a0e4bd190a1d8cfdd6b2e7f96b0e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Duje=20Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
+Date: Sun, 3 Nov 2024 19:38:26 +0100
+Subject: [PATCH 15/16] DONOTMERGE: mmc: host: Disable "Tuning failed" message
+
+---
+ drivers/mmc/host/sdhci.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 5f78be7ae16d..5e5676f94e16 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -2906,8 +2906,8 @@ int __sdhci_execute_tuning(struct sdhci_host *host, u32 opcode)
+ 
+ 	}
+ 
+-	pr_info("%s: Tuning failed, falling back to fixed sampling clock\n",
+-		mmc_hostname(host->mmc));
++	/*pr_info("%s: Tuning failed, falling back to fixed sampling clock\n",
++		mmc_hostname(host->mmc));*/
+ 	sdhci_reset_tuning(host);
+ 	return -EAGAIN;
+ }
+-- 
+2.50.1
+

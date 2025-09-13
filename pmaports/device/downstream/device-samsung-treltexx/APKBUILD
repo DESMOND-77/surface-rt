@@ -1,0 +1,30 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-samsung-treltexx
+pkgdesc="Samsung Galaxy Note 4"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="
+	linux-samsung-treltexx
+	msm-fb-refresher
+	mkbootimg
+	postmarketos-base
+	postmarketos-base-downstream-disable-udev-v4l
+"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+babba8e1a9b38040173aa8a288f6dc99f179c9dac7090ff83e8783bbd3652196433ae8343fca5d52f548a49ba3c598d09b5105ba3848bbf0ce0b67f324cb1dc2  deviceinfo
+"

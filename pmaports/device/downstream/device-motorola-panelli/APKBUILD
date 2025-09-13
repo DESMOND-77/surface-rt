@@ -1,0 +1,28 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-motorola-panelli
+pkgdesc="Motorola Moto C Plus"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="
+	linux-motorola-panelli
+	mkbootimg
+	postmarketos-base
+"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+5aafbb49a7048f26cc23d065582812c628bffe6a90ffc620e72ed2be481fbf46fc468e98a4a9552a362da09b3ab294160f2377a6c4fd61ae4ff7109d1b752679  deviceinfo
+"

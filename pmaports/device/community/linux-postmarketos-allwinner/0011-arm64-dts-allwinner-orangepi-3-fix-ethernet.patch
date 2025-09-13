@@ -1,0 +1,38 @@
+From b4e7f2625de37f3f1a35b194b3e1bf656704af24 Mon Sep 17 00:00:00 2001
+From: Maxim Karasev <begs@disroot.org>
+Date: Sat, 4 Sep 2021 14:56:01 +0300
+Subject: [PATCH] arm64: dts: allwinner: orangepi-3: fix ethernet
+
+This patch will apply only over Megi's tree. It's based on a larger
+patch from LibreELEC tree.
+---
+ arch/arm64/boot/dts/allwinner/sun50i-h6-orangepi-3.dts | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h6-orangepi-3.dts b/arch/arm64/boot/dts/allwinner/sun50i-h6-orangepi-3.dts
+index e0c2b097cf46..d9dd9cbf68f9 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h6-orangepi-3.dts
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h6-orangepi-3.dts
+@@ -145,7 +145,7 @@ hdmi_out_con: endpoint {
+ &emac {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&ext_rgmii_pins>;
+-	phy-mode = "rgmii-id";
++	phy-mode = "rgmii-txid";
+ 	phy-handle = <&ext_rgmii_phy>;
+ 	/*
+ 	 * The board uses 2.5V RGMII signalling. Power sequence to enable
+@@ -155,8 +155,8 @@ &emac {
+ 	 */
+ 	phy-supply = <&reg_aldo2>;
+ 	phy-io-supply = <&reg_gmac_2v5>;
+-	allwinner,rx-delay-ps = <200>;
+-	allwinner,tx-delay-ps = <200>;
++	allwinner,rx-delay-ps = <1500>;
++	allwinner,tx-delay-ps = <700>;
+ 	status = "okay";
+ };
+ 
+-- 
+2.50.0
+

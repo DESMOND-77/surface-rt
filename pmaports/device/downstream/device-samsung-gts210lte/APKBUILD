@@ -1,0 +1,43 @@
+# Reference: <https://postmarketos.org/devicepkg>
+# Maintainer: Henrik Grimler <henrik@grimler.se>
+pkgname=device-samsung-gts210lte
+pkgdesc="Samsung Galaxy Tab S2 9.7 LTE (2015)"
+pkgver=3
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="
+	linux-samsung-gts210lte
+	msm-fb-refresher
+	mkbootimg
+	postmarketos-base
+	postmarketos-base-downstream
+	postmarketos-base-downstream-disable-udev-v4l
+"
+makedepends="devicepkg-dev"
+source="deviceinfo 90-sec_touchscreen.rules"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+
+	install -D -m644 "$srcdir"/90-sec_touchscreen.rules \
+		"$pkgdir"/usr/lib/udev/rules.d/90-sec_touchscreen.rules
+}
+
+nonfree_firmware() {
+	pkgdesc="Non-free firmware for Samsung Galaxy Tab S2"
+	depends="firmware-samsung-gts210 firmware-samsung-gts210-lte"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+23d27cbe7ab51b1e01330bd974f93cb93a7e385b16e1d1579a6e4b102d8761de8057cff453dfa4fd8aac612570c43d535d6629d7f67acc2d23b2353d691177b2  deviceinfo
+0d23fae6de9b04a36f395068278b8a9054c33e435b24de943da1e55a0ee2d88ee932a3fd2f660596377b14474483edecb8357684f9b7bc2c53979c7f863fae52  90-sec_touchscreen.rules
+"

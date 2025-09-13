@@ -1,0 +1,26 @@
+# Maintainer: Danila Tikhonov <danila@jiaxyga.com>
+# Co-Maintainer: Jens Reidel <adrian@travitia.xyz>
+# Co-Maintainer: David Wronek <david@mainlining.org>
+pkgname=alsa-ucm-conf-qcom-sm7150
+pkgver=1.2.11_git20240810
+pkgrel=1
+pkgdesc="ALSA UCM configuration for SM7150 devices"
+url="https://github.com/sm7150-mainline/alsa-ucm-conf"
+arch="aarch64"
+license="BSD-3-Clause"
+provides="alsa-ucm-conf"
+provider_priority=1
+_commit="30ff4bed580e0c24f235409069c5f798866897e0"
+source="$pkgname-$_commit.tar.gz::https://github.com/sm7150-mainline/alsa-ucm-conf/archive/$_commit.tar.gz"
+options="!check"
+builddir="$srcdir/alsa-ucm-conf-$_commit"
+
+package() {
+	# install audio config files
+	mkdir -p "$pkgdir"/usr/share/alsa
+	cp -r ucm2 "$pkgdir"/usr/share/alsa/
+}
+
+sha512sums="
+9a722c6c8090242ac3914e270931a27f241bb616d25b0964e9402805577362939c4dfd973da20df8d9fab75ae9e77656987c6c9b3cd9e59a74d5cb10b1eae052  alsa-ucm-conf-qcom-sm7150-30ff4bed580e0c24f235409069c5f798866897e0.tar.gz
+"

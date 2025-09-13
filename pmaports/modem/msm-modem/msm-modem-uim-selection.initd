@@ -1,0 +1,20 @@
+#!/sbin/openrc-run
+
+# This script tries to automatically configure UIM application for Qualcomm QMI
+# modems with more than one sim slot.
+
+name="UIM Slot selection"
+description="Select UIM slot and application on the embedded QMI nodem."
+
+depend() {
+	need rmtfs
+	before ofono
+	before modemmanager
+}
+
+# Use the service start method instead of command= because we want to block
+# other services while the modem isn't ready yet.
+start() {
+	SIM_WAIT_TIME="$sim_wait_time" /usr/libexec/msm-modem-uim-selection
+	eend $?
+}

@@ -1,0 +1,66 @@
+# Maintainer: M0Rf30 <morf3089@gmail.com>
+# Co-Maintainer: Ultra-azu <ultra.public@proton.me>
+# Co-Maintainer: Barnabas Czeman <barnabas.czeman@postmarketos.org>
+# Kernel config based on: defconfig, msm8953.config, and device configs
+
+_flavor="postmarketos-qcom-msm8953"
+pkgname=linux-$_flavor
+pkgver=6.15.0
+pkgrel=2
+pkgdesc="Close to mainline linux kernel for Qualcomm Snapdragon MSM8953"
+arch="aarch64"
+_carch="arm64"
+url="https://github.com/msm8953-mainline/linux"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community
+"
+makedepends="
+	bash
+	bison
+	findutils
+	flex
+	openssl-dev
+	perl
+	postmarketos-installkernel
+	python3
+"
+
+_tag="$pkgver-r0"
+
+source="
+	$pkgname-v$_tag.tar.gz::$url/archive/v$_tag.tar.gz
+	config-$_flavor.aarch64
+"
+builddir="$srcdir/linux-$_tag"
+
+prepare() {
+	default_prepare
+	cp "$srcdir/config-$_flavor.$arch" .config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-$_flavor"
+}
+
+package() {
+	mkdir -p "$pkgdir"/boot
+
+	make zinstall modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_PATH="$pkgdir"/boot \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_DTBS_PATH="$pkgdir/boot/dtbs"
+	rm -f "$pkgdir"/lib/modules/*/build "$pkgdir"/lib/modules/*/source
+
+	install -Dm644 "$builddir/include/config/kernel.release" \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+}
+sha512sums="
+952c42d9f98f246b695a69362bb896fee0e20274daa8b82bd2f169ff92fda9ac3a3b0dfc894ac884de2eca88f7198d7cde836324b1876b91c141fe243791aeb3  linux-postmarketos-qcom-msm8953-v6.15.0-r0.tar.gz
+17171772139d9b820969dceceadfd9af9c38ba6b3dd18e58de8f0b22b17254b3b3323ad13152594ec6c0ed7315d65a417ff24729f7887dbc69eb2cbc70cd8d51  config-postmarketos-qcom-msm8953.aarch64
+"

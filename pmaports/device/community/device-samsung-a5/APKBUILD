@@ -1,0 +1,47 @@
+# Reference: <https://postmarketos.org/devicepkg>
+# Maintainer: Minecrell <minecrell@minecrell.net>
+# Co-Maintainer: Alexey Minnekhanov <alexeymin@postmarketos.org>
+pkgname=device-samsung-a5
+pkgdesc="Samsung Galaxy A5 (2015)"
+pkgver=12
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="postmarketos-base mkbootimg linux-postmarketos-qcom-msm8916
+	 soc-qcom-msm8916 soc-qcom-msm8916-rproc soc-samsung-msm8916-modem-workaround"
+makedepends="devicepkg-dev"
+source="deviceinfo modules-initfs"
+subpackages="
+	$pkgname-nonfree-firmware:nonfree_firmware
+"
+_pmb_select="soc-qcom-msm8916-rproc"
+
+# Backwards compatibility for old device package names + kernel variants
+_substitutes="device-samsung-a5lte device-samsung-a5ulte"
+replaces="$_substitutes $pkgname-kernel-mainline $pkgname-kernel-mainline-modem"
+for pkg in $_substitutes; do replaces="$replaces $pkg-kernel-mainline $pkg-kernel-mainline-modem"; done
+for pkg in $replaces; do provides="$provides $pkg=$pkgver-r$pkgrel"; done
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="GPU/WiFi/BT/Modem/Video firmware"
+	depends="firmware-qcom-adreno-a300 msm-firmware-loader firmware-samsung-a5-wcnss-nv"
+	replaces=""
+	for pkg in $_substitutes; do replaces="$replaces $pkg-nonfree-firmware"; done
+	for pkg in $replaces; do provides="$provides $pkg=$pkgver-r$pkgrel"; done
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+113af5e20f5a42870b2796e71b6533a1f330fefacbec7dd659648f9148391a8ba9a1dde4a3f8732740ff25c8334a6dbfb4352a4a82e76da45d9ce5a597fc3199  deviceinfo
+13ba472485d757332b46a21fe771ae2779d0c5f1e997b6e51a4c0acce902256f0a2c724828251acf0150d7de919b691053de59041fea0b983569a004dcb75256  modules-initfs
+"

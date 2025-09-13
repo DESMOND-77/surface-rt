@@ -1,0 +1,28 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-nokia-panther
+pkgdesc="Nokia 4.2"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	linux-nokia-panther
+	mkbootimg
+	postmarketos-base
+"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+5a3d1ab7b8b3c2b8220b7e19984b83674e188f7b36c8380d31135e42258793ae5f96a9eb5acfbc5a293c49e2d2eabf80badc3ad68bf047ddf8a90fd63689b84c  deviceinfo
+"

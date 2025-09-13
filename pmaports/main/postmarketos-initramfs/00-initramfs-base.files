@@ -1,0 +1,13 @@
+/bin/busybox
+/bin/busybox-extras
+/bin/sh
+/etc/deviceinfo
+/etc/unudhcpd.conf
+/sbin/blkid
+/usr/bin/unudhcpd
+/usr/sbin/kpartx
+/usr/share/deviceinfo/deviceinfo
+/usr/share/initramfs/init_functions.sh:/init_functions.sh
+/usr/share/initramfs/init.sh:/init
+/usr/share/initramfs/mdev.conf:/etc/mdev.conf
+/usr/share/misc/source_deviceinfo

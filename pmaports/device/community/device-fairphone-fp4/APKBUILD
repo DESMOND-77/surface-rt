@@ -1,0 +1,77 @@
+# Reference: <https://postmarketos.org/devicepkg>
+# Maintainer: Luca Weiss <luca@lucaweiss.eu>
+pkgname=device-fairphone-fp4
+pkgdesc="Fairphone 4"
+pkgver=5
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	bootmac
+	firmware-fairphone-fp4-adreno
+	firmware-fairphone-fp4-adsp
+	firmware-fairphone-fp4-bluetooth
+	firmware-fairphone-fp4-cdsp
+	firmware-fairphone-fp4-hexagonfs
+	firmware-fairphone-fp4-ipa
+	firmware-fairphone-fp4-modem
+	firmware-fairphone-fp4-wlan
+	firmware-qcom-adreno-a630
+	hexagonrpcd>=0.3.2-r3
+	linux-firmware-ath10k
+	linux-postmarketos-qcom-sm6350
+	make-dynpart-mappings
+	mesa-vulkan-freedreno
+	mkbootimg
+	msm-modem
+	msm-modem-uim-selection
+	pd-mapper
+	postmarketos-base
+	qbootctl
+	swclock-offset
+	tqftpserv
+"
+makedepends="devicepkg-dev"
+subpackages="$pkgname-openrc"
+source="
+	81-libssc-fairphone-fp4.rules
+	deviceinfo
+	hexagonrpcd.confd
+	modules-initfs
+	"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+
+	install -Dm644 "$srcdir"/81-libssc-fairphone-fp4.rules \
+		"$pkgdir"/usr/lib/udev/rules.d/81-libssc-fairphone-fp4.rules
+	install -Dm644 "$srcdir"/hexagonrpcd.confd \
+		"$pkgdir"/usr/share/hexagonrpcd/hexagonrpcd-adsp-sensorspd.conf
+}
+
+openrc() {
+	install_if="$pkgname=$pkgver-r$pkgrel openrc"
+	install="$subpkgname.post-install $subpkgname.post-upgrade"
+	depends="
+		hexagonrpcd-openrc
+		openrc
+		pd-mapper-openrc
+		qbootctl-openrc
+		tqftpserv-openrc
+	"
+
+	mkdir -p "$subpkgdir"
+}
+
+sha512sums="
+2c16ba75e0077b2b1eaefa4c73b287475505a1aeb291ec29316d41cc094277320f9d2aaabfd91eb1dc0f488ab2d61a94faef16e7afe0f1e226779113761b9a37  81-libssc-fairphone-fp4.rules
+97629090e9d08391ec9ee9f84cf40b9710c9dffc09609f056a27869acc8f87e176765f6e8f9800ef29872df8f48a2e085eeaaaf69f38f8a97ecb1d19ac9c79eb  deviceinfo
+6a3d620f2cc60308a62ff651ffb00a5ee1f092131cca9d33b6afd61c8a372a3fd7d46540162213593107e0943b33f3f0119d003d43dcd06dbde757390a6c1729  hexagonrpcd.confd
+52bb7ed829caa4dcff9728bd6e3cdf118b3c7ee7dfe90df0d4e6422dd67bf3258ae2a4d2dc7599da4182fbd8eb47a0e1d20c58198dc17f2bf178b8f01a8887f7  modules-initfs
+"

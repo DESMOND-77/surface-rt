@@ -1,0 +1,170 @@
+# Forked from Alpine for temporary downstream patches
+
+pkgname=libcamera
+_pkgver=0.5.2
+pkgver=9999$_pkgver
+pkgrel=1
+pkgdesc="Linux camera framework"
+url="https://libcamera.org/"
+arch="all"
+license="LGPL-2.1-or-later AND GPL-2.0-or-later"
+depends_dev="
+	eudev-dev
+	glib-dev
+	gnutls-dev
+	gst-plugins-bad-dev
+	qt6-qtbase-dev
+	"
+# upstream calls 'date' with a non-POSIX option so we pull in coreutils
+makedepends="$depends_dev
+	coreutils
+	doxygen
+	graphviz
+	gtest-dev
+	libevent-dev
+	libpisp-dev
+	libunwind-dev
+	libyuv-dev
+	linux-headers
+	meson
+	py3-jinja2
+	py3-ply
+	py3-sphinx
+	py3-sphinxcontrib-doxylink
+	py3-yaml
+	qt6-qttools-dev
+	yaml-dev
+	"
+subpackages="
+	$pkgname-dbg
+	$pkgname-dev
+	$pkgname-doc
+	qcam
+	$pkgname-gstreamer
+	$pkgname-v4l2
+	$pkgname-tools
+	"
+source="https://gitlab.freedesktop.org/camera/libcamera/-/archive/v$_pkgver/libcamera-v$_pkgver.tar.gz
+	0001-libcamera-simple-Enable-softwareISP-for-the-librem5.patch
+	0002-libcamera-simple-Force-disable-softwareISP-for-milli.patch
+	0003-libcamera-simple-Enable-softISP-for-the-Pinephone.patch
+	0004-libcamera-simple-Skip-hwISP-formats-if-swISP-is-acti.patch
+	0005-pipeline-simple-Consider-output-sizes-when-choosing-.patch
+	0006-pipeline-simple-Increase-internal-buffer-count-to-fo.patch
+	0007-ipa-simple-Add-tuning-file-for-IMX355.patch
+	0008-ipa-simple-Add-tuning-file-for-IMX363.patch
+	0009-ipa-simple-Add-tuning-file-for-s5k3l6xx.patch
+	0010-ipa-simple-Add-tuning-file-for-hi846.patch
+	0011-ipa-simple-Add-tuning-file-for-IMX371.patch
+	0012-ipa-simple-Add-tuning-file-for-IMX376.patch
+	qcam.desktop
+	"
+builddir="$srcdir/$pkgname-v$_pkgver"
+# gstreamer tests fail
+# manual strip because ipa .sign files depend on the file contents- have to re-sign after strip
+options="!strip !check"
+
+case "$CARCH" in
+arm*|aarch64)
+	subpackages="$subpackages $pkgname-raspberrypi"
+	;;
+esac
+
+case "$CARCH" in
+ppc64le|s390x|riscv64|loongarch64)
+	# doesn't install any ipa
+	;;
+*)
+	depends="$pkgname-ipa=$pkgver-r$pkgrel"
+	subpackages="$subpackages $pkgname-ipa"
+	;;
+esac
+
+build() {
+	abuild-meson \
+		-Dtest=true \
+		-Dv4l2=true \
+		-Dwerror=false \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test -C output --print-errorlogs
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+	install -Dm644 -t "$pkgdir"/usr/share/applications "$srcdir"/qcam.desktop
+
+	# manual strip first..
+	scanelf --recursive \
+		--nobanner \
+		--etype "ET_DYN,ET_EXEC" \
+		--format "%F" \
+		"$pkgdir" \
+		| while read -r file; do
+			strip "$file"
+	done
+}
+
+ipa() {
+	depends=""
+	amove usr/lib/libcamera
+	# then sign ipa's
+	local ipa
+	for ipa in "$subpkgdir"/usr/lib/libcamera/ipa/ipa*.so; do
+		msg "signing $ipa"
+		"$builddir"/src/ipa/ipa-sign.sh \
+			"$(find "$builddir"/output -type f -iname "*ipa-priv-key.pem")" \
+			"$ipa" \
+			"$ipa".sign
+	done
+}
+
+qcam() {
+	depends=""
+	amove usr/bin/qcam
+
+	amove usr/share/applications/qcam.desktop
+}
+
+gstreamer() {
+	depends=""
+	amove usr/lib/gstreamer-1.0
+}
+
+v4l2() {
+	depends=""
+	amove usr/libexec/libcamera/v4l2-compat.so
+}
+
+raspberrypi() {
+	depends=""
+	amove usr/share/libcamera/ipa/rpi
+	amove usr/libexec/libcamera/raspberrypi_ipa_proxy
+	amove usr/share/libcamera/pipeline/rpi/vc4
+}
+
+tools() {
+	depends=""
+	amove usr/bin/cam
+	amove usr/bin/lc-compliance
+}
+
+sha512sums="
+eb2ef122baa2a884c6b5303610882ba9d5699ebbadb24c21cdf2e09466a85ef54689c5e291fb153c0acd37307756dd4eb5353d16200b3469272398797513f131  libcamera-v0.5.2.tar.gz
+19162d2908ef4b27088572f7ff7ee0c6c558edd077b69a831ad4ba7fe21a8b748093be8210c2c165e976b770cccdb0f6bbb1999279dc4b4a8a02a4d4ff98a310  0001-libcamera-simple-Enable-softwareISP-for-the-librem5.patch
+f74d5f9af621d7980c84f9af8b62d80d0762553d3897d32802d51eebce05f3577220bf0f8a92dddc04c269fe52b19240f8dbddd9e96ca2b6780e5ba8b9cc80d7  0002-libcamera-simple-Force-disable-softwareISP-for-milli.patch
+c09c5abf68a665cb0dfdc113579816df8a5219e58cfa6f754c7cfee7a2abdef584f2ca4284f4da7126fe068448d3f25877e5578dac8b709ca70587a4c39bf6a0  0003-libcamera-simple-Enable-softISP-for-the-Pinephone.patch
+eed9f819962dc15384ee2058cbf3b00e499c3f86c1ee2ee022ff9955e73d00145345ce6467a99c9255f7ca68b6fe32e08da6d93b109f27b15692cb443fc73d2e  0004-libcamera-simple-Skip-hwISP-formats-if-swISP-is-acti.patch
+a9c09ba6efa6d69ccb6a598a7b1b68a82f732cd083371ba527c616f91a43e8af8c0e323e6fbb412a8967336e2552e13f40454ee7ff39005710757f23c7211a75  0005-pipeline-simple-Consider-output-sizes-when-choosing-.patch
+1d2bea7bb72f3e0bd9ec0b998c7fd43747a4de8fd63e8f850365626dfa431585c045e43c3978e6c148a505de3fec3d966198fa1f76175f71bd0216ea1e96134d  0006-pipeline-simple-Increase-internal-buffer-count-to-fo.patch
+c1f3090edb8595993b6b2f70e6cdf3e7aaffbd763eda31fa8f580519393ba7d1e2596e2f7a62f3a6133b23174ca1de5329d7cb6909af0445b18e10188874ff1a  0007-ipa-simple-Add-tuning-file-for-IMX355.patch
+6a3f067b3655c6d1e3d2fef1ef4bdcfe9aa0a6b95a678ef658a2c8e36464e890ab031f6230cd7eb89b8718f2e9f15063581898cd9cd651c1f7801d57db4914b2  0008-ipa-simple-Add-tuning-file-for-IMX363.patch
+7e9a47bff0d73bdae65b798e2f2d180b7d6f150bb775aef6166d407285600df1594a7eb45b57406480f29157e91c2629e6d69460770b2df8df0e6d18943e27f7  0009-ipa-simple-Add-tuning-file-for-s5k3l6xx.patch
+aa9b4d5ced2e37de03ec415ed109dd686a66f03c638169aceaf6bf8a373e02c892dd64be86f57c12bb03325fb9c76600ca110b6e9f06e9dbb040040f67b48ff6  0010-ipa-simple-Add-tuning-file-for-hi846.patch
+12a828306bb438b987475767cf203cb96e9277b87b31bab266cf1e97165e111f6155aaddfcf09fff3f1590c00657ec9257a72a30265b12dfd8c256b540e2cda7  0011-ipa-simple-Add-tuning-file-for-IMX371.patch
+0112fa18ad2abe390e9e033060d01ec771b1dedad6fa91f00e3714740004a215076ddba31acd5e1a0f7bd0b81ff6537f96f2eb82d4735680bd2bb7696f1e12e0  0012-ipa-simple-Add-tuning-file-for-IMX376.patch
+22167a4eceb6d1b40b0b7c45fdf116c71684f5340de7f767535cb8e160ad9d2ae0f00cb3d461f73a344520a48a4641cf46226841d78bee06bfbfd2a91337f754  qcam.desktop
+"

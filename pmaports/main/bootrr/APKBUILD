@@ -1,0 +1,45 @@
+# Maintainer: Casey Connolly <kcxt@postmarketos.org>
+pkgname=bootrr
+pkgver=0.1_git20230827
+_commit="cac8008d8ba6ba6e7361e87022d7ac1940b8c8b8"
+pkgrel=3
+pkgdesc="A sanity checker for boards under automated test"
+url="https://github.com/andersson/bootrr"
+arch="noarch"
+license="BSD-3-Clause"
+subpackages="$pkgname-pmtest"
+source="
+	bootrr-$_commit.tar.gz::https://github.com/andersson/bootrr/archive/$_commit.tar.gz
+	00-bootrr.files
+	00-bootrr.sh
+	0001-bin-generate-use-POSIX-sh-and-support-spaces.patch
+	0002-boards-support-OnePlus-6-6T.patch
+"
+builddir="$srcdir/bootrr-$_commit"
+options="!check"
+
+build() {
+	make prefix=/usr all
+}
+
+package() {
+	make prefix=/usr DESTDIR="$pkgdir" install
+}
+
+pmtest() {
+	install_if="$pkgname=$pkgver-r$pkgrel postmarketos-mkinitfs-hook-ci"
+
+	install -Dm755 "$srcdir"/00-bootrr.sh \
+		"$subpkgdir"/usr/libexec/pmos-tests-initramfs/00-bootrr.sh
+
+	install -Dm644 "$srcdir"/00-bootrr.files \
+		"$subpkgdir"/usr/share/mkinitfs/files/00-bootrr.files
+}
+
+sha512sums="
+139f480470518795dba89c1efd1632c595b4a2dba040735d2c1bc6d34f368ad77336a20d6513fac108d9f891d9cec53ee1511bc02e7483563e08954de57e1eff  bootrr-cac8008d8ba6ba6e7361e87022d7ac1940b8c8b8.tar.gz
+bd0ed41c4dba232b6ac211ae58cad83b15a4408829cd8df0a866453b014c8d4b17900d9310e8a2a02248f6da8853bdd2b04ed96c250204def8e086c0ba15b9e7  00-bootrr.files
+f5568803fe5d0254da222e09e06a062f77a98cfa5f438c54c788f6a08d56ea1a7b85f75595ad46c2a173e95681df58552ae572eba30b3239d5e4c225b4c54a2a  00-bootrr.sh
+382ea333ac724bed4e77a8fda7ef6d761f9a9d2dadae2366664531f69b9e8001a51159907c888fbfe419435dd585ea321aab993cecd498f91df57a76d0037f99  0001-bin-generate-use-POSIX-sh-and-support-spaces.patch
+a70757412345b001b82600af1a3370de711647f9787a1d64e654fbeef9e1a473d7932030dfab91526d41444d49a5990b7f97111ba9567f20ea6827ba09150e48  0002-boards-support-OnePlus-6-6T.patch
+"

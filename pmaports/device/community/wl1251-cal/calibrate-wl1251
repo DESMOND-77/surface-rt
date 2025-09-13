@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+if [ -e /in-pmbootstrap ]; then
+	echo "Skipping update of wl1251 calibration data (running in pmbootstrap)"
+	exit 0
+fi
+
+# Store the firmware in the pmos firmware search path
+mkdir -p /lib/firmware/postmarketos/ti-connectivity
+touch /lib/firmware/postmarketos/ti-connectivity/wl1251-nvs.bin
+
+echo "Extracting and writing wl1251 calibration data.."
+wl1251-cal --nvs-loading=/dev/null --nvs-push-data=/lib/firmware/postmarketos/ti-connectivity/wl1251-nvs.bin
+echo "Done"

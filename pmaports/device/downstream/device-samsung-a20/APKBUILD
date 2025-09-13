@@ -1,0 +1,32 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-samsung-a20
+pkgdesc="Samsung Galaxy A20"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="postmarketos-base linux-samsung-a20 mkbootimg"
+makedepends="devicepkg-dev"
+source="deviceinfo initfs-hook.sh"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="Non-free firmware for the Samsung Galaxy A20"
+	depends="firmware-samsung-a20"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+b6f2c1be2ed9006a98271fefd6073913a70a0830f29fd1e5108cb9efad2bac6e69833aacdf08b55b19d6ac98d9eff4ea2c680be25ba292ad84c901ba4cfc7764  deviceinfo
+04445194a5245d08fcf1b425bff1d8dd6a8fdacafdc151223634299a35f1eb20fbd733979b58bcfd854e16fde02629c28453f840d6c9dc34fc15d4fcc8aa4302  initfs-hook.sh
+"

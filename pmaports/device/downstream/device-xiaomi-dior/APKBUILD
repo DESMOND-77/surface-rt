@@ -1,0 +1,31 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-xiaomi-dior
+pkgdesc="Xiaomi Redmi Note 4G"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="postmarketos-base linux-xiaomi-dior mkbootimg msm-fb-refresher"
+makedepends="devicepkg-dev linux-headers"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="Wifi firmware"
+	depends="firmware-xiaomi-dior"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+09a636d433b47c7cbe94b2f663c430308b52ed5ee3a7f5ff0920f2dab1d8d4f745115af15f0b223f36936986a93e62b4a5b0e15ef088ae12993a11a270f536c8  deviceinfo
+"

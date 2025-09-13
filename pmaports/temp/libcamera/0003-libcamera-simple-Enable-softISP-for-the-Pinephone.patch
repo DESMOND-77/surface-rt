@@ -1,0 +1,32 @@
+From feded9b82352dd659d8f6d31a94a3ccf3dbf008c Mon Sep 17 00:00:00 2001
+From: Robert Mader <robert.mader@collabora.com>
+Date: Wed, 1 May 2024 18:12:02 +0200
+Subject: [PATCH 03/12] libcamera: simple: Enable softISP for the Pinephone
+
+In theory the PP should be able to use the actual HW ISP, however in
+practice this does not work well yet - especially as the driver for the
+front camera in Megi differs heavily from the upstream one.
+
+Thus enable the swISP to make both cameras work reliably for now. This
+is essentially what Megapixels does as well. If the HW ISP situation
+improves, this can be dropped again.
+---
+ src/libcamera/pipeline/simple/simple.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/libcamera/pipeline/simple/simple.cpp b/src/libcamera/pipeline/simple/simple.cpp
+index eb405e52c..f4b49b1ab 100644
+--- a/src/libcamera/pipeline/simple/simple.cpp
++++ b/src/libcamera/pipeline/simple/simple.cpp
+@@ -257,7 +257,7 @@ static const SimplePipelineInfo supportedDevices[] = {
+ 	{ "mtk-seninf", { { "mtk-mdp", 3 } }, false },
+ 	{ "mxc-isi", {}, false },
+ 	{ "qcom-camss", {}, true },
+-	{ "sun6i-csi", {}, false },
++	{ "sun6i-csi", {}, true },
+ };
+ 
+ } /* namespace */
+-- 
+2.50.1
+

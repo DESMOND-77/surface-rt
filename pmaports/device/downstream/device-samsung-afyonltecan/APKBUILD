@@ -1,0 +1,24 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-samsung-afyonltecan
+pkgdesc="Samsung Galaxy Core LTE"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="postmarketos-base linux-samsung-afyonltecan mkbootimg msm-fb-refresher"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+f6950361dfc10c471d2324a67a86b8e684358f9b4f78360d2b508bec01ad5f52bc3a8c46cea5420ecef265209704e39a9e0a6347705829acf1c2794352f87f45  deviceinfo
+"

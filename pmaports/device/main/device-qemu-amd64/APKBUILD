@@ -1,0 +1,66 @@
+# Reference: <https://postmarketos.org/devicepkg>
+# Maintainer: Minecrell <minecrell@minecrell.net>
+# Co-Maintainer: Oliver Smith <ollieparanoid@postmarketos.org>
+pkgname=device-qemu-amd64
+pkgver=11
+pkgrel=0
+pkgdesc="Simulated device in QEMU (x86_64)"
+url="https://postmarketos.org"
+arch="x86_64"
+license="MIT"
+depends="
+	postmarketos-base
+	postmarketos-qemu-common
+	systemd-boot
+	"
+makedepends="devicepkg-dev"
+# First kernel subpackage is default in pmbootstrap init!
+subpackages="
+	$pkgname-kernel-lts:kernel_lts
+	$pkgname-kernel-virt:kernel_virt
+	$pkgname-kernel-stable:kernel_stable
+	$pkgname-kernel-none:kernel_none
+	"
+source="
+	deviceinfo
+	modules-initfs
+	"
+options="!check !archcheck"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+kernel_none() {
+	pkgdesc="No kernel (does not boot! can be used during pmbootstrap testing to save time)"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+kernel_virt() {
+	pkgdesc="Alpine Virt kernel (minimal, no audio/mouse/network)"
+	depends="linux-virt"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+kernel_lts() {
+	pkgdesc="Alpine LTS kernel (recommended)"
+	depends="linux-lts linux-firmware-none"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+kernel_stable() {
+	pkgdesc="Alpine Stable kernel"
+	depends="linux-stable linux-firmware-none"
+	provides="$pkgname-kernel-edge=$pkgver-r$pkgrel"
+	replaces="$pkgname-kernel-edge"
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
+}
+
+sha512sums="
+c0f57d66a16cfbe8654e73f83a3b07cdfbd10506cf2a79363e742f5b2bbe87344841dbb897acd9816ca3c481706288626bdf7bde1b31bfd957d075e3ed6e984a  deviceinfo
+29766094e64a7ce881c8e96433203ea538057b8fd1d577fc69b9add6bc1217af04ddf60cbcf82333811c627897eda7537b0b1f862899e1fdfd93403b3f6425d7  modules-initfs
+"

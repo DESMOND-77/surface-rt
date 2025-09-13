@@ -1,0 +1,29 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-nokia-fame
+pkgdesc="Nokia Lumia 520"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="
+	linux-nokia-fame
+	mkbootimg
+	postmarketos-base
+	mdss-fb-init-hack
+"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+5561075dd69233fc8f22de84fad6936327a8bd5cabd581fb8e45255a3ab3f81e8fc4fe0b7ae6d5a186c894eca2058d94cb6a43b4f30ef0f114a7f3928d2e9af8  deviceinfo
+"

@@ -1,0 +1,78 @@
+# Maintainer: Oliver Smith <ollieparanoid@postmarketos.org>
+# Co-Maintainer: Clayton Craft <clayton@craftyguy.net>
+pkgname=postmarketos-mkinitfs
+pkgver=2.6.4
+pkgrel=0
+pkgdesc="Tool to generate initramfs images for postmarketOS"
+url="https://postmarketos.org"
+depends="
+	boot-deploy>=0.9
+"
+makedepends_build="go scdoc"
+options="pmb:cross-native2"
+replaces="mkinitfs"
+
+triggers="$pkgname.trigger=\
+/lib/firmware/*:\
+/usr/lib/systemd/boot:\
+/usr/lib/udev:\
+/usr/libexec/pmos-tests-initramfs:\
+/usr/share/deviceinfo:\
+/usr/share/kernel/*:\
+/usr/share/mkinitfs-triggers:\
+/usr/share/mkinitfs/*\
+"
+
+# mkinitfs-vendor-$pkgver.tar.gz: vendored Go deps, is part of the release:
+# https://gitlab.postmarketos.org/postmarketOS/postmarketos-mkinitfs/-/releases
+source="
+	https://gitlab.postmarketos.org/postmarketOS/postmarketos-mkinitfs/-/archive/$pkgver/postmarketos-mkinitfs-$pkgver.tar.gz
+	https://gitlab.postmarketos.org/api/v4/projects/postmarketOS%2Fpostmarketos-mkinitfs/packages/generic/mkinitfs-vendor-$pkgver/$pkgver/mkinitfs-vendor-$pkgver.tar.gz
+	"
+
+install="$pkgname.post-upgrade"
+arch="all"
+license="GPL-2.0-or-later"
+provider_priority=999  # higher priority than Alpine's mkinitfs
+provides="initramfs-generator"
+subpackages="$pkgname-doc"
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+export GOPATH="$srcdir"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+
+prepare() {
+	default_prepare
+	ln -s "$srcdir"/vendor "$builddir"/vendor
+}
+
+build() {
+	unset LDFLAGS  # passed to Go as linker flags, which are invalid
+
+	# * Set DISABLE_GOGC=1 for e.g. aarch64 -> x86_64 for:
+	#   https://gitlab.com/qemu-project/qemu/-/issues/2560
+	# * Set CGO_ENABLED=1 to fix "-buildmode=pie requires external (cgo)
+	#   linking, but cgo is not enabled" when cross compiling with
+	#   cross-native2 from e.g. x86_64 to (armv7,riscv64,armhf). See also:
+	#   https://gitlab.alpinelinux.org/alpine/aports/-/issues/15809
+	case "$CARCH" in
+	x86_64)
+		make VERSION="$pkgver" DISABLE_GOGC=1 CGO_ENABLED=1;;
+	*)
+		make VERSION="$pkgver" CGO_ENABLED=1;;
+	esac
+}
+
+package() {
+	make PREFIX=/usr DESTDIR="$pkgdir" install
+}
+
+check() {
+	go test ./...
+}
+
+sha512sums="
+cb1a995f87f69b6f28fc735fd35d6a165c14c4eadd99df30a9f3131c497a9ed72866dac8fd104cfb1705cfc7cee2c1dcba1a1a732659ad62cc8c3f2408f55b1d  postmarketos-mkinitfs-2.6.4.tar.gz
+403da22fce289c0f71eb7dd032785a6cb2414cf39c8de40171b5a6d0d2659cf2aa387cefa4fa1f7350d0c705b50cf1159c9dc17bc2fc222a2639b0bcbd378d06  mkinitfs-vendor-2.6.4.tar.gz
+"

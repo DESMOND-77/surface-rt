@@ -1,0 +1,90 @@
+# Maintainer: Clayton Craft <clayton@craftyguy.net>
+# Co-Maintainer: Casey Connolly <kcxt@postmarketos.org>
+pkgname=linux-postmarketos-qcom-laptop
+pkgver=6.16
+pkgrel=0
+# Commit from branch @ https://github.com/jhovold/linux/tree/wip/x1e80100-$pkgver
+_commit="a9cd6cda46ab81b1ec1d687d40ff0933dc6e6915"
+pkgdesc="Generic kernel for Qualcomm laptops"
+arch="aarch64"
+_carch="arm64"
+_flavor="postmarketos-qcom-laptop"
+url="https://kernel.org"
+license="GPL-2.0-only"
+options="!strip
+	!check
+	!tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community
+	pmb:kconfigcheck-uefi
+	pmb:kconfigcheck-virt
+"
+makedepends="
+	bash
+	bc
+	bison
+	devicepkg-dev
+	elfutils-dev
+	findutils
+	flex
+	git
+	linux-headers
+	openssl-dev
+	pahole
+	perl
+	python3
+	zstd
+"
+replaces="linux-lenovo-21bx"
+
+# Source
+_repository="linux"
+source="
+	$pkgname-$_commit.tar.gz::https://github.com/jhovold/$_repository/archive/$_commit.tar.gz
+	misc.config
+	pmos.config
+"
+builddir="$srcdir/linux-$_commit"
+_outdir="out"
+_defconfig="johan_defconfig"
+
+prepare() {
+	default_prepare
+	cp "$srcdir/pmos.config" "$builddir"/arch/"$_carch"/configs/
+	cp "$srcdir/misc.config" "$builddir"/arch/"$_carch"/configs/
+
+	# Generate .config
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-$_flavor" \
+		"$_defconfig" pmos.config misc.config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-$_flavor"
+}
+
+package() {
+	install -Dm644 "$builddir/arch/$_carch/boot/vmlinuz.efi" \
+			"$pkgdir/boot/linux.efi"
+
+	make modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_PATH="$pkgdir"/boot/ \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_DTBS_PATH="$pkgdir"/boot/dtbs
+
+	rm -f "$pkgdir"/lib/modules/*/build "$pkgdir"/lib/modules/*/source
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+}
+
+sha512sums="
+147ff8e664ef809ad45de839947ead5ac006c67f5d63bb3199d0064102aab97671f477a1a6a0ef4df7512a1c560e40e31b2b8735990d5310c107e3ce880a35c4  linux-postmarketos-qcom-laptop-a9cd6cda46ab81b1ec1d687d40ff0933dc6e6915.tar.gz
+e7a651b3780b1cfa68ca65b9e62f77db4273cf5b9162514318c347790d961b4668d0c6eb51604aaaf15a15c9f370fe03b4b977163293af379fda9a08d5f7e73d  misc.config
+89244418a7331fd89109591f2748bebdcc7c9a4a34980a551d0a42abf063cb47188758d5e22001caf10f8db893532544a3dbd1111764ddea9db6048bbde005f4  pmos.config
+"

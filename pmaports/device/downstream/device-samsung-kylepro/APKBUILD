@@ -1,0 +1,31 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-samsung-kylepro
+pkgdesc="Samsung Galaxy Trend Plus"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="postmarketos-base linux-samsung-kyleproxx mkbootimg msm-fb-refresher"
+makedepends="devicepkg-dev"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="Wifi firmware"
+	depends="firmware-samsung-kylepro"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+c2b0b57031ef41d27e62866ad052fb0fed70c9719f93ed364d0b5ed6d36beb929ffdc6975aa49cd75d41c8b23a6b401856e1a2e1a581473dfa59840dafbf3506  deviceinfo
+"

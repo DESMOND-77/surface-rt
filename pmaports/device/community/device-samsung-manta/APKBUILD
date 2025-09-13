@@ -1,0 +1,59 @@
+# Reference: <https://postmarketos.org/devicepkg>
+# Maintainer: Jenneron <jenneron@protonmail.com>
+# Co-Maintainer: Alexandre Marquet <tb@a-marquet.fr>
+pkgname=device-samsung-manta
+pkgdesc="Google Nexus 10"
+pkgver=9
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="
+	linux-postmarketos-exynos5
+	mkbootimg
+	postmarketos-base
+"
+makedepends="devicepkg-dev"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+source="
+	deviceinfo
+	modules-initfs
+	hwclock
+"
+replaces="openrc" # for hwclock configuration
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+
+	mkdir -p "$pkgdir"/lib/modules-load.d
+	echo "ds2482" \
+		> "$pkgdir"/lib/modules-load.d/ds2482.conf
+
+	mkdir -p "$pkgdir"/lib/modprobe.d
+	echo "options ds2482 active_pullup=0" \
+		> "$pkgdir"/lib/modprobe.d/ds2482.conf
+
+	install -Dm644 "$srcdir"/hwclock \
+		-t "$pkgdir"/etc/conf.d/
+}
+
+nonfree_firmware() {
+	pkgdesc="Firmware for Samsung Manta (Nexus 10)"
+	depends="
+		firmware-samsung-manta
+		linux-firmware-brcm
+		linux-firmware-s5p-mfc
+	"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+9a566c5be457834f0cfa5750ced12ed1c26019dd24c311f4c8b3bf8b6417658c2868a6b2b6d2eb73b75a67e3bb707d8ae8016f80342d2b467d1e44eff7303269  deviceinfo
+e00c58936fa4340f8531538136ad028d002342a4399b68d26190b931831108007486257f9d8a48c3ed454696b45d176b1497d624c33ace21e61eba33ac7ce136  modules-initfs
+8a9756c66bf1eacd6a9717abf772a198123391deac7e32a520666dd6f72c4c5b09d1a4791437c8902f62cf4b49106ace195d57082972b1cb4c843c8e1b065875  hwclock
+"

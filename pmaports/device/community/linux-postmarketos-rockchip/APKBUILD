@@ -1,0 +1,76 @@
+# Maintainer: Quade Curry <qc8086@qc8086.com>
+pkgname=linux-postmarketos-rockchip
+pkgver=6.6.34
+pkgrel=6
+pkgdesc="Mainline kernel for rockchip devices"
+arch="aarch64"
+_carch="arm64"
+_flavor="${pkgname#linux-}"
+url="https://kernel.org"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community
+	"
+makedepends="
+	bash
+	bison
+	devicepkg-dev
+	findutils
+	flex
+	postmarketos-installkernel
+	openssl-dev
+	perl
+	rsync
+	gzip
+	xz
+	gmp-dev
+	mpc1-dev
+	mpfr-dev
+	"
+
+# Source
+_config="config-$_flavor.$arch"
+case $pkgver in
+	*.*.*)	_kernver=${pkgver%.0};;
+	*.*)	_kernver=$pkgver;;
+esac
+
+source="
+	https://cdn.kernel.org/pub/linux/kernel/v${_kernver%%.*}.x/linux-$_kernver.tar.xz
+	$_config
+"
+builddir="$srcdir/linux-$_kernver"
+
+prepare() {
+	default_prepare
+	REPLACE_GCCH=0 \
+		. downstreamkernel_prepare
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-$_flavor"
+}
+
+package() {
+	downstreamkernel_package "$builddir" "$pkgdir" "$_carch" "$_flavor"
+
+	make -j1 modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_DTBS_PATH="$pkgdir/boot/dtbs"
+
+	gzip -v "$pkgdir"/boot/vmlinuz
+	mv "$pkgdir"/boot/vmlinuz.gz "$pkgdir"/boot/vmlinuz
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+}
+
+sha512sums="
+eaa792be65c4cdfd37b84d4dadd22086c8507c1f78d538255cff03595e1caee0f88b521c398b6bc9ab3632010133cff5c7b14200413d54cf0a38bea79c2fd29f  linux-6.6.34.tar.xz
+c1918e6a98d8721f4088b3dd2f84bd2de1a4ab9f8ad7a6dc261ac71ff90cd3393f18626b41945f5832d9d9c6549a5b906d2d38b437e29fd70897670581642e2d  config-postmarketos-rockchip.aarch64
+"

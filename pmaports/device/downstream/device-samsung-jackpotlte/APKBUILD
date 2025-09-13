@@ -1,0 +1,31 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-samsung-jackpotlte
+pkgdesc="Samsung Galaxy A8 (2018)"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="postmarketos-base linux-samsung-jackpotlte mkbootimg"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="Non-free firmware for the Samsung Galaxy A8 (2018)"
+	depends="firmware-samsung-universal7885"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+cd43527591bcc9b91697b59c6793659696f9baf416bd68823d4479a37fab8f02c443564c3161d0f7570f5d1a516f6c56e48e34b923dada4d5dd58fdaffe4370a  deviceinfo
+"

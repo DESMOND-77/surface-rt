@@ -1,0 +1,29 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-amazon-austin
+pkgdesc="Amazon Fire 7 (2017)"
+pkgver=2
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="armv7"
+options="!check !archcheck"
+depends="
+	linux-amazon-austin
+	mkbootimg
+	postmarketos-base
+	msm-fb-refresher
+"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="
+60f7d369b40daa351c27759f633680997017c5808c0469e012e20050db4d70ecb9c7071d383fb7f3e5bcada35435cd31ab77251a8a2a80ef3eee5fe9c38f5b56  deviceinfo
+"

@@ -1,0 +1,74 @@
+# Maintainer: Newbyte <newbyte@disroot.org>
+# Co-Maintainer: Henrik Grimler <henrik@grimler.se>
+# Co-Maintainer: knuxify <knuxify@gmail.com>
+# Kernel config based on: arch/arm/configs/exynos_defconfig
+
+pkgname=linux-postmarketos-exynos4
+pkgver=6.10.0
+pkgrel=6
+pkgdesc="Mainline kernel fork for Samsung Exynos4 devices"
+arch="armv7"
+_carch="arm"
+_flavor="${pkgname#linux-}"
+url="https://gitlab.com/exynos4-mainline/linux"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-community
+	"
+makedepends="
+	bash
+	bison
+	findutils
+	flex
+	gmp-dev
+	mpc1-dev
+	mpfr-dev
+	openssl-dev
+	perl
+	postmarketos-installkernel
+	xz
+	zstd
+"
+
+# Source
+_config="config-$_flavor.$arch"
+case $pkgver in
+	*.*.*)	_kernver=${pkgver%.0};;
+	*.*)	_kernver=$pkgver;;
+esac
+_tag="v${pkgver//_/-}-exynos4"
+source="
+	$pkgname-$_tag.tar.bz2::$url/-/archive/$_tag/linux-$_tag.tar.bz2
+	$_config
+"
+builddir="$srcdir/linux-$_tag"
+
+prepare() {
+	default_prepare
+	cp -v "$srcdir/$_config" .config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" KCFLAGS="-Wno-array-bounds" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS"
+}
+
+package() {
+	mkdir -p "$pkgdir"/boot
+	make zinstall modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_PATH="$pkgdir"/boot \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_DTBS_PATH="$pkgdir/boot/dtbs"
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+}
+
+sha512sums="
+a320d0be4532f469be015e2a6706e507e89daaa55ad50d57a56451dca04b6bbea56f62d15877ef000027ce887ecd04257f9c71d7c9d80aab55607494205fa5c7  linux-postmarketos-exynos4-v6.10.0-exynos4.tar.bz2
+9ed024c2816d561039a6079e46e6dee6e9a616bdca93aee91f67b37b2c3dd6291065eabcaa506f1b9a5f7016dddaf330668e9eb91c3c18ed91782ef17be861ea  config-postmarketos-exynos4.armv7
+"

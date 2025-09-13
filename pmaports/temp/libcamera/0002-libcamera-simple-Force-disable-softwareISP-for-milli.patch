@@ -1,0 +1,43 @@
+From c7a3900faac43a42678fe84f5d5683e93bbb7dc8 Mon Sep 17 00:00:00 2001
+From: Robert Mader <robert.mader@collabora.com>
+Date: Thu, 9 May 2024 21:07:07 +0200
+Subject: [PATCH 02/12] libcamera: simple: Force-disable softwareISP for
+ millipixels
+
+As the later uses libcamera and requires raw-streams to get passed
+through. In the future, libcamera will likely support both - raw and
+swIsp - at the same time.
+---
+ src/libcamera/pipeline/simple/simple.cpp | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/src/libcamera/pipeline/simple/simple.cpp b/src/libcamera/pipeline/simple/simple.cpp
+index 74e0683f4..eb405e52c 100644
+--- a/src/libcamera/pipeline/simple/simple.cpp
++++ b/src/libcamera/pipeline/simple/simple.cpp
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <algorithm>
++#include <fstream>
+ #include <iterator>
+ #include <list>
+ #include <map>
+@@ -1680,6 +1681,14 @@ bool SimplePipelineHandler::matchDevice(MediaDevice *media,
+ 
+ 	swIspEnabled_ = info.swIspEnabled;
+ 
++	std::string comm_string;
++	std::ifstream("/proc/self/comm") >> comm_string;
++	if (comm_string == "millipixels") {
++		LOG(SimplePipeline, Warning)
++				<< "Detected millipixels, disabling swIsp";
++		swIspEnabled_ = false;
++	}
++
+ 	/* Locate the sensors. */
+ 	std::vector<MediaEntity *> sensors = locateSensors(media);
+ 	if (sensors.empty()) {
+-- 
+2.50.1
+
